@@ -1,0 +1,15 @@
+{
+  "name": "web-crawler",
+  "version": "1.0.0",
+  "description": "Making a web crawler",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "jest"
+  },
+  "author": "Mo-Ikram",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
