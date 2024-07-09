@@ -1,5 +1,26 @@
 const { JSDOM } = require("jsdom");
 
+async function crawlPages(getCurrUrl) {
+  try {
+
+    const res = await fetch(getCurrUrl);
+
+    if (res.status > 399) {
+      console.log(`error in fetch code ${res.status} on page ${getCurrUrl}`);
+      return
+    }
+
+    const contentType = res.headers.get("content-type") 
+    if (!contentType.includes("text/html")) {
+      console.log(`non html response , contentType : ${contentType} , on page : ${getCurrUrl}`);
+      return
+    }
+    console.log(await res.text());
+  } catch (error) {
+    console.log(`Bad URL at ${getCurrUrl} , error at ${error.message}`);
+  }
+}
+
 function getURLsFromHTML(htmlBody, baseURL) {
   const urls = [];
   const dom = new JSDOM(htmlBody);
@@ -38,4 +59,5 @@ function normalizeURL(urlString) {
 module.exports = {
   normalizeURL,
   getURLsFromHTML,
+  crawlPages,
 };
