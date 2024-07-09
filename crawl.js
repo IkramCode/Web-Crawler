@@ -1,24 +1,49 @@
 const { JSDOM } = require("jsdom");
 
-async function crawlPages(getCurrUrl) {
-  try {
+async function crawlPages(baseURL, getCurrUrl, pages) {
+  const baseURLObj = new URL(baseURL);
+  const getCurrUrlObj = new URL(getCurrUrl);
+  if (baseURLObj.hostname !== getCurrUrlObj.hostname) {
+    return pages;
+  }
 
+  const normalizedgetCurrURL = normalizeURL(getCurrUrl);
+  if (pages[normalizedgetCurrURL] > 0) {
+    pages[normalizedgetCurrURL]++;
+    return pages;
+  }
+
+  pages[normalizedgetCurrURL] = 1;
+
+  console.log(`actively crawling :${getCurrUrl}`);
+
+  try {
     const res = await fetch(getCurrUrl);
 
     if (res.status > 399) {
       console.log(`error in fetch code ${res.status} on page ${getCurrUrl}`);
-      return
+      return pages;
     }
 
-    const contentType = res.headers.get("content-type") 
+    const contentType = res.headers.get("content-type");
     if (!contentType.includes("text/html")) {
-      console.log(`non html response , contentType : ${contentType} , on page : ${getCurrUrl}`);
-      return
+      console.log(
+        `non html response , contentType : ${contentType} , on page : ${getCurrUrl}`
+      );
+      return pages;
     }
-    console.log(await res.text());
+
+    const htmlBody = await res.text();
+
+    const nextURLs = getURLsFromHTML(htmlBody, baseURL);
+
+    for (const nextURL of nextURLs) {
+      pages = await crawlPages(baseURL, nextURL, pages);
+    }
   } catch (error) {
     console.log(`Bad URL at ${getCurrUrl} , error at ${error.message}`);
   }
+  return pages
 }
 
 function getURLsFromHTML(htmlBody, baseURL) {
